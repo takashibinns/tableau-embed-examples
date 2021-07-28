@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic Embed</title>
+    <script type="text/javascript" src="https://public.tableau.com/javascripts/api/tableau-2.min.js"></script>
+    <script type="text/javascript">
+
+        /*  Idle Timeout code   */
+
+        //  Define the max idle time (5 min)
+        const maxTimeout = 5 * 60 * 1000;
+
+        //  Define a placeholder var for out timeout
+        var time;
+
+        //  Function that resets the timer
+        function resetTimer() {
+            clearTimeout(time);
+            time = setTimeout(logout, maxTimeout)
+        }
+
+        //  Function triggered, when the user has been idle for too long
+        function logout() {
+            alert("You were idle for too long, logging you out!")
+            console.log("Idle Timeout Detected! do something else")
+        }
+
+        //  Setup the event listeners for this web app
+        window.onload = function() {
+            window.onload = resetTimer;
+            // DOM Events
+            document.onmousemove = resetTimer;
+            document.onkeydown = resetTimer;
+        }
+
+        //  Define placeholder for our tableau viz object
+        var myviz;
+
+        //  Function that runs when Tableau detects some user activity (reset the timer)
+        function resetTimerTableau(message) {
+            console.log("Tableau detected a " + message + " event")
+            resetTimer()
+        }
+        
+        //  Init the tableau viz
+        function initViz() {
+            console.log("Initializing the Viz")
+            //  Define Viz options
+            var containerDiv = document.getElementById("vizContainer"),
+                url = "http://public.tableau.com/views/RegionalSampleWorkbook/Storms",
+                options = {
+                    hideTabs: true,
+                    onFirstInteractive: function () {
+                        console.log("Viz has finished loading");
+                        myviz.addEventListener(tableau.TableauEventName.MARKS_SELECTION, function() { resetTimerTableau("MARKS_SELECTION"); });
+                        myviz.addEventListener(tableau.TableauEventName.FILTER_CHANGE, function() { resetTimerTableau("FILTER_CHANGE"); });
+                        myviz.addEventListener(tableau.TableauEventName.PARAMETER_VALUE_CHANGE, function() { resetTimerTableau("PARAMETER_VALUE_CHANGE"); });
+                        myviz.addEventListener(tableau.TableauEventName.STORY_POINT_SWITCH, function() { resetTimerTableau("STORY_POINT_SWITCH"); });
+                    }
+                };
+            //  Create the Viz object, save it to our viz object
+            myviz = new tableau.Viz(containerDiv, url, options);
+        }
+
+    </script>
+
+</head>
+
+<body onload="initViz();">
+    <div id="vizContainer" style="width:800px; height:700px;"></div>
+</body>
+
+</html>
